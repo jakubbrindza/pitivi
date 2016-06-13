@@ -43,6 +43,7 @@ from pitivi.utils import loggable
 from pitivi.utils.loggable import Loggable
 from pitivi.utils.misc import path_from_uri
 from pitivi.utils.misc import quote_uri
+from pitivi.utils.misc import show_shortcuts_window
 from pitivi.utils.proxy import ProxyManager
 from pitivi.utils.system import get_system
 from pitivi.utils.threads import ThreadMaster
@@ -166,6 +167,12 @@ class Pitivi(Gtk.Application, Loggable):
         self.quit_action.connect("activate", self._quitCb)
         self.add_action(self.quit_action)
         self.set_accels_for_action("app.quit", ["<Control>q"])
+
+        self.show_shortcuts_action = Gio.SimpleAction.new("shortcuts_window", None)
+        self.show_shortcuts_action.connect("activate", self._showShortcutsCb)
+        self.add_action(self.show_shortcuts_action)
+        self.set_accels_for_action("app.shortcuts_window", ["<Control>F1",
+                                                            "<Control>question"])
 
     def do_activate(self):
         if self.gui:
@@ -349,6 +356,9 @@ class Pitivi(Gtk.Application, Loggable):
 
     def _redoCb(self, unused_action, unused_param):
         self.action_log.redo()
+
+    def _showShortcutsCb(self, unused_action, unused_param):
+        show_shortcuts_window()
 
     def _action_log_pre_push_cb(self, unused_action_log, action):
         try:

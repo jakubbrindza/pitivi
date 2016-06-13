@@ -37,6 +37,7 @@ import pitivi.utils.loggable as log
 from pitivi.configure import APPMANUALURL_OFFLINE
 from pitivi.configure import APPMANUALURL_ONLINE
 from pitivi.configure import APPNAME
+from pitivi.shortcuts import Shortcuts
 from pitivi.utils.threads import Thread
 
 
@@ -282,6 +283,11 @@ def show_user_manual(page=None):
                                           " installed"))
         dialog.run()
         dialog.destroy()
+
+
+def show_shortcuts_window():
+    shortcuts_window = Shortcuts()
+    shortcuts_window.show()
 
 
 def unicode_error_dialog():

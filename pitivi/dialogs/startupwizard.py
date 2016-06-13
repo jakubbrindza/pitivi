@@ -27,6 +27,7 @@ from pitivi.check import missing_soft_deps
 from pitivi.configure import get_ui_dir
 from pitivi.dialogs.depsmanager import DepsManager
 from pitivi.utils.misc import show_user_manual
+from pitivi.utils.misc import show_shortcuts_window
 
 
 class StartUpWizard(object):
@@ -49,7 +50,7 @@ class StartUpWizard(object):
     @staticmethod
     def _cheatsheetCb(unused_button):
         """Show the cheatsheet section of the user manual"""
-        show_user_manual("cheatsheet")
+        show_shortcuts_window()
 
     def __init__(self, app):
         self.app = app

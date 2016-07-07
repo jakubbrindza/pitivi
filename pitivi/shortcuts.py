@@ -23,7 +23,7 @@ from pitivi.utils.misc import show_user_manual
 
 
 class ShortcutsManager:
-    """Manager class storing the shortcuts from all across the app"""
+    """Manager storing the shortcuts from all across the app."""
 
     def __init__(self, app):
         self.app = app
@@ -79,10 +79,10 @@ class ShortcutsWindow(Gtk.ShortcutsWindow):
         """Gathers the accelerators and populates the window."""
         section = Gtk.ShortcutsSection()
         section.show()
-        for group_id in self.groups:
-            group = Gtk.ShortcutsGroup(title=self.group_titles[group_id])
+        for group_id in self.app.shortcuts.groups:
+            group = Gtk.ShortcutsGroup(title=self.app.shortcuts.group_titles[group_id])
             group.show()
-            for action, title in self.group_actions[group_id]:
+            for action, title in self.app.shortcuts.group_actions[group_id]:
                 accelerators = " ".join(self.app.get_accels_for_action(action))
                 short = Gtk.ShortcutsShortcut(title=title, accelerator=accelerators)
                 short.show()

@@ -16,9 +16,11 @@
 # License along with this program; if not, write to the
 # Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 # Boston, MA 02110-1301, USA.
-"""Accelerators info."""
+import os.path
+
 from gi.repository import Gtk
 
+from pitivi.settings import xdg_config_home
 from pitivi.utils.misc import show_user_manual
 
 
@@ -30,6 +32,28 @@ class ShortcutsManager:
         self.groups = []
         self.group_titles = {}
         self.group_actions = {}
+        self.shortcuts_config_path = os.path.sep.join([xdg_config_home(),
+                                                       "shortcuts.conf"])
+        self.__loaded = self.load()
+
+    def load(self):
+        if not os.path.isfile(self.shortcuts_config_path):
+            return False
+
+        for line in open(self.shortcuts_config_path, "r"):
+            action_name, accelerators = line.split(":", 1)
+            accelerators = accelerators.strip("\n").split(",")
+            self.app.set_accels_for_action(action_name, accelerators)
+        return True
+
+    def save(self):
+        with open(self.shortcuts_config_path, "w")\
+                as conf_file:
+            for group_id in self.groups:
+                for action, title in self.group_actions[group_id]:
+                    conf_file.write(action + ":" +
+                                    ",".join(self.app.get_accels_for_action(
+                                        action)) + "\n")
 
     def add(self, action, accelerators, title=None, group=None):
         """Adds an action to be displayed.
@@ -42,7 +66,8 @@ class ShortcutsManager:
             group (Optional[str]): The group id registered with `register_group`
                 to be used instead of the one extracted from `action`.
         """
-        self.app.set_accels_for_action(action, accelerators)
+        if not self.__loaded:
+            self.app.set_accels_for_action(action, accelerators)
 
         if title:
             action_prefix = group or action.split(".")[0]

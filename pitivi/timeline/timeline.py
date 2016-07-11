@@ -1307,6 +1307,11 @@ class TimelineContainer(Gtk.Grid, Zoomable, Loggable):
         can_paste = bool(self.__copiedGroup)
         self.paste_action.set_enabled(can_paste)
         self.keyframe_action.set_enabled(selection_non_empty)
+        project_loaded = bool(self._project)
+        self.navigate_left_1second.set_enabled(project_loaded)
+        self.navigate_right_1second.set_enabled(project_loaded)
+        self.navigate_left_framerate.set_enabled(project_loaded)
+        self.navigate_right_framerate.set_enabled(project_loaded)
 
     # Internal API
 
@@ -1395,6 +1400,11 @@ class TimelineContainer(Gtk.Grid, Zoomable, Loggable):
         self.toolbar.insert_action_group("timeline", group)
         ShortcutsWindow.register_group("timeline", _("Timeline"))
 
+        navigation_group = Gio.SimpleActionGroup()
+        self.timeline.layout.insert_action_group("timeline_navigation", navigation_group)
+        self.toolbar.insert_action_group("timeline_navigation", navigation_group)
+        ShortcutsWindow.register_group("timeline_navigation", _("Timeline Navigation"))
+
         self.zoom_in_action = Gio.SimpleAction.new("zoom-in", None)
         self.zoom_in_action.connect("activate", self._zoomInCb)
         group.add_action(self.zoom_in_action)
@@ -1481,6 +1491,38 @@ class TimelineContainer(Gtk.Grid, Zoomable, Loggable):
                                        ["K"])
         ShortcutsWindow.add_action("timeline.keyframe-selected-clips",
                                    _("Add keyframe to the keyframe curve of selected clip"))
+
+        self.navigate_left_1second = Gio.SimpleAction.new("navigate_left_1second", None)
+        self.navigate_left_1second.connect("activate", self._navigate_left_1second)
+        navigation_group.add_action(self.navigate_left_1second)
+        self.app.set_accels_for_action("timeline_navigation.navigate_left_1second",
+                                       ["<Shift>Left"])
+        ShortcutsWindow.add_action("timeline_navigation.navigate_left_1second",
+                                   _("Navigate to the left by 1 second"))
+
+        self.navigate_right_1second = Gio.SimpleAction.new("navigate_right_1second", None)
+        self.navigate_right_1second.connect("activate", self._navigate_right_1second)
+        navigation_group.add_action(self.navigate_right_1second)
+        self.app.set_accels_for_action("timeline_navigation.navigate_right_1second",
+                                       ["<Shift>Right"])
+        ShortcutsWindow.add_action("timeline_navigation.navigate_right_1second",
+                                   _("Navigate to the right by 1 second"))
+
+        self.navigate_left_framerate = Gio.SimpleAction.new("navigate_left_framerate", None)
+        self.navigate_left_framerate.connect("activate", self._navigate_left_framerate)
+        navigation_group.add_action(self.navigate_left_framerate)
+        self.app.set_accels_for_action("timeline_navigation.navigate_left_framerate",
+                                       ["<Control>Left", "Left"])
+        ShortcutsWindow.add_action("timeline_navigation.navigate_left_framerate",
+                                   _("Navigate to the left by a framerate"))
+
+        self.navigate_right_framerate = Gio.SimpleAction.new("navigate_right_framerate", None)
+        self.navigate_right_framerate.connect("activate", self._navigate_right_framerate)
+        navigation_group.add_action(self.navigate_right_framerate)
+        self.app.set_accels_for_action("timeline_navigation.navigate_right_framerate",
+                                       ["<Control>Right", "Right"])
+        ShortcutsWindow.add_action("timeline_navigation.navigate_right_framerate",
+                                   _("Navigate to the right by a framerate"))
 
     def _setBestZoomRatio(self, allow_zoom_in=False):
         """Sets the zoom level so that the entire timeline is in view."""
@@ -1730,29 +1772,27 @@ class TimelineContainer(Gtk.Grid, Zoomable, Loggable):
         elif event.keyval == Gdk.KEY_Control_L:
             self._controlMask = True
 
-        # Now the second (independent) part: framestepping and seeking
-        # shortcuts
-        if event.keyval == Gdk.KEY_Left:
-            if self._shiftMask:
-                self._project.pipeline.seekRelative(0 - Gst.SECOND)
-            else:
-                self._project.pipeline.stepFrame(self._framerate, -1)
-            self.timeline.scrollToPlayhead(align=Gtk.Align.CENTER, when_not_in_view=True)
-            return True
-        elif event.keyval == Gdk.KEY_Right:
-            if self._shiftMask:
-                self._project.pipeline.seekRelative(Gst.SECOND)
-            else:
-                self._project.pipeline.stepFrame(self._framerate, 1)
-            self.timeline.scrollToPlayhead(align=Gtk.Align.CENTER, when_not_in_view=True)
-            return True
-        return False
-
     def do_key_release_event(self, event):
         if event.keyval == Gdk.KEY_Shift_L:
             self._shiftMask = False
         elif event.keyval == Gdk.KEY_Control_L:
             self._controlMask = False
+
+    def _navigate_left_1second(self, unused_action, unused_parameter):
+        self._project.pipeline.seekRelative(0 - Gst.SECOND)
+        self.timeline.scrollToPlayhead(align=Gtk.Align.CENTER, when_not_in_view=True)
+
+    def _navigate_right_1second(self, unused_action, unused_parameter):
+        self._project.pipeline.seekRelative(Gst.SECOND)
+        self.timeline.scrollToPlayhead(align=Gtk.Align.CENTER, when_not_in_view=True)
+
+    def _navigate_left_framerate(self, unused_action, unused_parameter):
+        self._project.pipeline.stepFrame(self._framerate, -1)
+        self.timeline.scrollToPlayhead(align=Gtk.Align.CENTER, when_not_in_view=True)
+
+    def _navigate_right_framerate(self, unused_action, unused_parameter):
+        self._project.pipeline.stepFrame(self._framerate, 1)
+        self.timeline.scrollToPlayhead(align=Gtk.Align.CENTER, when_not_in_view=True)
 
     def do_focus_in_event(self, unused_event):
         self.log("Timeline has grabbed focus")

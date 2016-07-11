@@ -1405,26 +1405,6 @@ class TimelineContainer(Gtk.Grid, Zoomable, Loggable):
         self.toolbar.insert_action_group("timeline_navigation", navigation_group)
         ShortcutsWindow.register_group("timeline_navigation", _("Timeline Navigation"))
 
-        self.zoom_in_action = Gio.SimpleAction.new("zoom-in", None)
-        self.zoom_in_action.connect("activate", self._zoomInCb)
-        group.add_action(self.zoom_in_action)
-        self.app.set_accels_for_action("timeline.zoom-in", ["<Control>plus",
-                                                            "<Control>equal"])
-        ShortcutsWindow.add_action("timeline.zoom-in", _("Zoom in"))
-
-        self.zoom_out_action = Gio.SimpleAction.new("zoom-out", None)
-        self.zoom_out_action.connect("activate", self._zoomOutCb)
-        group.add_action(self.zoom_out_action)
-        self.app.set_accels_for_action("timeline.zoom-out", ["<Control>minus"])
-        ShortcutsWindow.add_action("timeline.zoom-out", _("Zoom out"))
-
-        self.zoom_fit_action = Gio.SimpleAction.new("zoom-fit", None)
-        self.zoom_fit_action.connect("activate", self._zoomFitCb)
-        group.add_action(self.zoom_fit_action)
-        self.app.set_accels_for_action("timeline.zoom-fit", ["<Control>0"])
-        ShortcutsWindow.add_action("timeline.zoom-fit",
-                                   _("Adjust zoom to fit the project to the window"))
-
         # Clips actions.
         self.delete_action = Gio.SimpleAction.new("delete-selected-clips", None)
         self.delete_action.connect("activate", self._deleteSelected)
@@ -1470,12 +1450,6 @@ class TimelineContainer(Gtk.Grid, Zoomable, Loggable):
         group.add_action(self.gapless_action)
 
         # Playhead actions.
-        self.play_action = Gio.SimpleAction.new("play", None)
-        self.play_action.connect("activate", self._playPauseCb)
-        group.add_action(self.play_action)
-        self.app.set_accels_for_action("timeline.play", ["space"])
-        ShortcutsWindow.add_action("timeline.play", _("Play"))
-
         self.split_action = Gio.SimpleAction.new("split-clips", None)
         self.split_action.connect("activate", self._splitCb)
         group.add_action(self.split_action)
@@ -1491,6 +1465,33 @@ class TimelineContainer(Gtk.Grid, Zoomable, Loggable):
                                        ["K"])
         ShortcutsWindow.add_action("timeline.keyframe-selected-clips",
                                    _("Add keyframe to the keyframe curve of selected clip"))
+
+        self.zoom_in_action = Gio.SimpleAction.new("zoom-in", None)
+        self.zoom_in_action.connect("activate", self._zoomInCb)
+        navigation_group.add_action(self.zoom_in_action)
+        self.app.set_accels_for_action("timeline_navigation.zoom-in",
+                                       ["<Control>plus", "<Control>equal"])
+        ShortcutsWindow.add_action("timeline_navigation.zoom-in", _("Zoom in"))
+
+        self.zoom_out_action = Gio.SimpleAction.new("zoom-out", None)
+        self.zoom_out_action.connect("activate", self._zoomOutCb)
+        navigation_group.add_action(self.zoom_out_action)
+        self.app.set_accels_for_action("timeline_navigation.zoom-out",
+                                       ["<Control>minus"])
+        ShortcutsWindow.add_action("timeline_navigation.zoom-out", _("Zoom out"))
+
+        self.zoom_fit_action = Gio.SimpleAction.new("zoom-fit", None)
+        self.zoom_fit_action.connect("activate", self._zoomFitCb)
+        navigation_group.add_action(self.zoom_fit_action)
+        self.app.set_accels_for_action("timeline_navigation.zoom-fit", ["<Control>0"])
+        ShortcutsWindow.add_action("timeline_navigation.zoom-fit",
+                                   _("Adjust zoom to fit the project to the window"))
+
+        self.play_action = Gio.SimpleAction.new("play", None)
+        self.play_action.connect("activate", self._playPauseCb)
+        navigation_group.add_action(self.play_action)
+        self.app.set_accels_for_action("timeline_navigation.play", ["space"])
+        ShortcutsWindow.add_action("timeline_navigation.play", _("Play"))
 
         self.navigate_left_1second = Gio.SimpleAction.new("navigate_left_1second", None)
         self.navigate_left_1second.connect("activate", self._navigate_left_1second)
